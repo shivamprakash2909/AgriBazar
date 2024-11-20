@@ -1,7 +1,7 @@
 {
-  "name": "Agribazar",
+  "name": "agribazar",
   "version": "1.0.0",
-  "description": "",
+  "description": "Agribazar is a platform designed to connect farmers, buyers, and sellers in a seamless online marketplace. This repository contains the backend codebase of the application.",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -37,5 +37,7 @@
     "redis": "^4.6.14",
     "sanitize-html": "^2.13.0",
     "v2": "^0.0.3"
-  }
+  },
+  "devDependencies": {},
+  "keywords": []
 }
