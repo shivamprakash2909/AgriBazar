@@ -5,8 +5,25 @@ document.addEventListener("DOMContentLoaded", function () {
   const sortDropdownItems = document.querySelectorAll(".dropdown-item");
   const searchForm = document.getElementById("searchForm");
   const searchInput = document.getElementById("searchInput");
+  let sort = "";
+  let search = "";
+  let minqty = 0;
+  let maxqty = Number.MAX_SAFE_INTEGER;
+  let minPrice = 0;
+  let maxPrice = Number.MAX_SAFE_INTEGER;
+  let quality = "";
+  let page = 1;
 
-  async function fetchProducts(sort = "", search = "", page = 1) {
+  async function fetchProducts(
+    sort = "",
+    search = "",
+    minqty = 0,
+    maxqty = 1000,
+    minPrice = 0,
+    maxPrice = "",
+    quality = "",
+    page = 1
+  ) {
     const loadingElement = document.getElementById("loading");
     const productContainer = document.querySelector(".products-container");
     const paginationContainer = document.querySelector(".pagination");
@@ -17,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       const response = await fetch(
-        `/api/products?sort=${sort}&search=${search}&page=${page}&limit=${productsPerPage}`
+        `/api/products?sort=${sort}&search=${search}&page=${page}&limit=${productsPerPage}&minqty=${minqty}&maxqty=${maxqty}&minprice=${minPrice}&maxprice=${maxPrice}&quality=${quality}`
       );
       const data = await response.json();
       products = data.products;
@@ -125,7 +142,16 @@ document.addEventListener("DOMContentLoaded", function () {
       if (event.target.tagName === "A") {
         event.preventDefault();
         currentPage = parseInt(event.target.getAttribute("data-page"));
-        fetchProducts("", searchInput.value, currentPage);
+        fetchProducts(
+          sort,
+          search,
+          minqty,
+          maxqty,
+          minPrice,
+          maxPrice,
+          quality,
+          currentPage
+        );
       }
     });
 
@@ -133,7 +159,17 @@ document.addEventListener("DOMContentLoaded", function () {
     item.addEventListener("click", function (event) {
       event.preventDefault();
       const sortOption = event.target.getAttribute("href").split("=")[1];
-      fetchProducts(sortOption, searchInput.value, 1);
+      sort = sortOption;
+      fetchProducts(
+        sort,
+        search,
+        minqty,
+        maxqty,
+        minPrice,
+        maxPrice,
+        quality,
+        1
+      );
     });
   });
   function debounce(func, delay) {
@@ -146,7 +182,17 @@ document.addEventListener("DOMContentLoaded", function () {
   searchInput.addEventListener(
     "input",
     debounce(function (event) {
-      fetchProducts("", searchInput.value, 1);
+      search = searchInput.value;
+      fetchProducts(
+        sort,
+        searchInput.value,
+        minqty,
+        maxqty,
+        minPrice,
+        maxPrice,
+        quality,
+        1
+      );
     }, 500)
   );
   fetchProducts();
@@ -155,4 +201,70 @@ document.addEventListener("DOMContentLoaded", function () {
   if (prevSearchQuery) {
     searchInput.value = prevSearchQuery;
   }
+  const filterBtn = document.getElementById("filterBtn");
+  const popupMenu = document.getElementById("popupMenu");
+  const overlay = document.getElementById("overlay");
+  const closeBtn = document.getElementById("closeBtn");
+
+  // Show popup and overlay
+  filterBtn.addEventListener("click", (event) => {
+    event.preventDefault(); // Prevents the form from submitting
+    // Show the popup
+    popupMenu.style.display = "block";
+    overlay.style.display = "block";
+  });
+
+  // Hide popup and overlay
+  closeBtn.addEventListener("click", () => {
+    popupMenu.style.display = "none";
+    overlay.style.display = "none";
+  });
+
+  overlay.addEventListener("click", () => {
+    popupMenu.style.display = "none";
+    overlay.style.display = "none";
+  });
+
+  // Add input event listeners
+  document
+    .getElementById("qualityFilter")
+    .addEventListener("change", (event) => {
+      quality = event.target.value;
+      console.log("Selected Quality:", event.target.value);
+      fetchProducts(
+        sort,
+        search,
+        minqty,
+        maxqty,
+        minPrice,
+        maxPrice,
+        quality,
+        1
+      );
+    });
+
+  document.getElementById("minQuantity").addEventListener("input", (event) => {
+    console.log("Min Quantity:", event.target.value);
+    minqty = event.target.value;
+    fetchProducts(sort, search, minqty, maxqty, minPrice, maxPrice, quality, 1);
+  });
+
+  document.getElementById("maxQuantity").addEventListener("input", (event) => {
+    console.log("Max Quantity:", event.target.value);
+    maxqty = event.target.value;
+    fetchProducts(sort, search, minqty, maxqty, minPrice, maxPrice, quality, 1);
+  });
+
+  document.getElementById("minPrice").addEventListener("input", (event) => {
+    console.log("Min Price:", event.target.value);
+    minPrice = event.target.value;
+    fetchProducts(sort, search, minqty, maxqty, minPrice, maxPrice, quality, 1);
+  });
+
+  document.getElementById("maxPrice").addEventListener("input", (event) => {
+    console.log("Max Price:", event.target.value);
+    maxPrice = event.target.value;
+    fetchProducts(sort, search, minqty, maxqty, minPrice, maxPrice, quality, 1);
+  });
 });
+// Event listeners for input changes

@@ -114,27 +114,54 @@ app.get(
 
 // get the product data to the frontend ajax call
 app.get("/api/products", async (req, res) => {
-  const { sort = "", search = "", page = 1, limit = 12 } = req.query;
+  // Destructure query params and provide defaults for each
+  const {
+    sort = "desc", // Default sort order
+    search = "", // Default search term
+    page = 1, // Default page number
+    limit = 12, // Default limit per page
+    minqty = 0, // Default minimum quantity
+    maxqty = 1000, // Default maximum quantity
+    minprice = 0, // Default minimum price
+    maxprice = 10000, // Default maximum price
+    quality = "", // Quality filter (empty for no filter)
+  } = req.query;
+
+  // Parse and ensure numbers are valid
+  const minPrice = isNaN(parseFloat(minprice)) ? 0 : parseFloat(minprice);
+  const maxPrice = isNaN(parseFloat(maxprice)) ? 10000 : parseFloat(maxprice);
+  const minQty = isNaN(parseInt(minqty)) ? 0 : parseInt(minqty);
+  const maxQty = isNaN(parseInt(maxqty)) ? 1000 : parseInt(maxqty);
+
   const offset = (page - 1) * limit;
-  const key = `product#${sort}#${search}#${page}`;
+  const key = `product#${sort}#${search}#${page}#${minQty}#${maxQty}#${minPrice}#${maxPrice}#${quality}`;
   const cachedData = await redis.get(key);
+
   if (cachedData) {
     return res.json(JSON.parse(cachedData));
   }
+
+  // Call the database search with the validated query params
   const { products, totalCount } = await database.SearchAndSortProducts(
     search,
     sort,
     limit,
-    offset
+    offset,
+    minQty,
+    maxQty,
+    minPrice,
+    maxPrice,
+    quality
   );
+
   const data = {
     products,
     totalPages: Math.ceil(totalCount / limit),
   };
+
   await redis.set(key, JSON.stringify(data), "EX", 120);
   res.json(data);
 });
-
 // renders the product from ejs
 app.get(
   "/product",

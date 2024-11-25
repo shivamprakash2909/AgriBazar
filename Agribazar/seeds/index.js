@@ -20,6 +20,7 @@ const pool = mysql
   .promise();
 
 const mbxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding");
+const { hashPassword } = require("../authenticat.js");
 const mapboxToken = process.env.MAPBOX_TOKEN;
 const geocoder = mbxGeocoding({ accessToken: mapboxToken });
 
@@ -97,9 +98,9 @@ const seed = async () => {
 };
 
 // Run the seed function
-seed().catch((err) => {
-  console.error("Error during seeding:", err);
-});
+// seed().catch((err) => {
+//   console.error("Error during seeding:", err);
+// });
 const createTables = async () => {
   const queries = [
     `CREATE TABLE IF NOT EXISTS users (
@@ -256,3 +257,19 @@ const createTables = async () => {
 //   VALUES (73, 'Seller73', 'seller73@example.com', 'hashedpassword', 'farmer');`);
 // }
 // seeding();
+
+// async function seeding() {
+//   const passwod = await hashPassword("guest");
+//   console.log(passwod);
+//   const res =
+//     await pool.query(`INSERT INTO users (user_id, username, email, password, user_type)
+//   VALUES (129, 'guest', 'guest@gmail.com', '${passwod}', 'farmer');`);
+//   console.log(res);
+// }
+// async function del() {
+//   const res = await pool.query(
+//     `DELETE FROM users WHERE email = 'guest@gmail.com' ;`
+//   );
+//   console.log(res[0]);
+// }
+// seeding().catch((err) => console.error("Error initializing database:", err));
